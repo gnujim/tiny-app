@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
@@ -9,6 +10,8 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com'
 };
 
+app.use(bodyParser.urlencoded({ extended: true }));
+
 app.get('/', (req, res) => {
   res.end('Hello!');
 });
@@ -17,6 +20,15 @@ app.get('/', (req, res) => {
 app.get('/urls', (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render('urls_index', templateVars);
+});
+
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new');
+});
+
+app.post('urls', (req, res) => {
+  console.log(req.body);
+  res.send('Ok');
 });
 
 app.get('/urls:id', (req, res) => {
