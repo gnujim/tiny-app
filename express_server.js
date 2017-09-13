@@ -1,7 +1,20 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const PORT = process.env.PORT || 8080;
+const app = express();
 
+//middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+
+//
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
+
+//use EJS for template
+app.set('view engine', 'ejs');
+
+//(not good practice to have in global scope)
 const urlDatabase = {
   b2xVn2: 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com'
@@ -23,9 +36,7 @@ const generateRandomString = () => {
   return shortURL;
 };
 
-const app = express();
-app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({ extended: true }));
+// ** ROUTES **
 
 app.get('/', (req, res) => {
   res.end('Hello!');
@@ -43,6 +54,12 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
+//render urls_new page
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new');
+});
+
+//allow user to enter new longURL
 app.post('/urls', (req, res) => {
   console.log(req.body);
   let longURL = req.body.longURL;
@@ -51,10 +68,7 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
-});
-
+//user can add to urlDatabase
 app.get('/urls/:id', (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
@@ -63,6 +77,7 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
+//??? why is adding in get and not post?
 //updates a URL resource and redirects to urls_index
 app.post('/urls/:id', (req, res) => {
   //modifies long url w corresponding short url
@@ -70,19 +85,18 @@ app.post('/urls/:id', (req, res) => {
   res.redirect('/urls');
 });
 
+//deletes id and value from urlDatabase
 app.post('/urls/:id/delete', (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect('/urls');
 });
 
+//
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
+//Hello test page
 app.get('/hello', (req, res) => {
   res.end('<html><body>Hello <b>World</b></body></html>\n');
-});
-
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
 });

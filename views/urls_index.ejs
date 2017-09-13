@@ -16,7 +16,7 @@
         <%= key %>
           <%= urls[key] %>
             <a href='http://localhost:8080/urls/<%= key %>'>Edit</a>
-            <form method="POST" action="/urls/<%= key %>/delete">
+            <form action="/urls/<%= key %>/delete" method="POST">
               <div class="button">
                 <button type="submit">Delete</button>
               </div>
