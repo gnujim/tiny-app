@@ -1,10 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const PORT = process.env.PORT || 8080;
 const app = express();
 
 //middleware
 app.use(bodyParser.urlencoded({ extended: true }));
+
+//
+app.use(cookieParser());
 
 //
 app.listen(PORT, () => {
@@ -38,8 +42,34 @@ const generateRandomString = () => {
 
 // ** ROUTES **
 
+//root
 app.get('/', (req, res) => {
   res.end('Hello!');
+});
+
+//when /urls request, render views/urls_index.ejs and pass in templateVars
+app.get('/urls', (req, res) => {
+  let templateVars = {
+    username: req.cookies['username'],
+    urls: urlDatabase
+  };
+  res.render('urls_index', templateVars);
+});
+
+//render urls_new page
+app.get('/urls/new', (req, res) => {
+  let templateVars = { username: req.cookies['username'] };
+  res.render('urls_new', templateVars);
+});
+
+//once redirected, render urls_show page
+app.get('/urls/:id', (req, res) => {
+  let templateVars = {
+    username: req.cookies['username'],
+    shortURL: req.params.id,
+    longURL: urlDatabase[req.params.id]
+  };
+  res.render('urls_show', templateVars);
 });
 
 //redirect short urls
@@ -48,33 +78,13 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
 });
 
-//when /urls request, render views/urls_index.ejs and pass in templateVars
-app.get('/urls', (req, res) => {
-  let templateVars = { urls: urlDatabase };
-  res.render('urls_index', templateVars);
-});
-
-//render urls_new page
-app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
-});
-
-//allow user to enter new longURL
+//obtain longURL from user, create shortURL, add to database
 app.post('/urls', (req, res) => {
   console.log(req.body);
   let longURL = req.body.longURL;
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
   res.redirect(`/urls/${shortURL}`);
-});
-
-//user can add to urlDatabase
-app.get('/urls/:id', (req, res) => {
-  let templateVars = {
-    shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id]
-  };
-  res.render('urls_show', templateVars);
 });
 
 //??? why is adding in get and not post?
@@ -90,6 +100,24 @@ app.post('/urls/:id/delete', (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect('/urls');
 });
+
+//GET login
+
+//GET register
+
+//login route
+app.post('/login', (req, res) => {
+  let username = req.body.username;
+  res.cookie('username', username);
+  res.redirect('/urls');
+});
+
+//POST register
+
+//POST logout
+
+//
+//--------------------------- other?
 
 //
 app.get('/urls.json', (req, res) => {
