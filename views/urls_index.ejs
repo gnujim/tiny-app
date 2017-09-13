@@ -10,11 +10,14 @@
   <header>
     <% include ./partials/_header %>
   </header>
-  <li>
+  <ul>
     <% for (var key in urls) { %>
-      <%= key %>
-        <% } %>
-  </li>
+      <li>
+        <%= key %>
+          <%= urls[key] %>
+      </li>
+      <% } %>
+  </ul>
 </body>
 
 </html>

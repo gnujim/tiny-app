@@ -24,6 +24,12 @@ app.get('/', (req, res) => {
   res.end('Hello!');
 });
 
+//redirect short urls
+app.get('/u/:shortURL', (req, res) => {
+  //let longURL =
+  res.redirect(longURL);
+});
+
 //when /urls request, render views/urls_index.ejs and pass in templateVars
 app.get('/urls', (req, res) => {
   let templateVars = { urls: urlDatabase };
@@ -32,15 +38,22 @@ app.get('/urls', (req, res) => {
 
 app.post('/urls', (req, res) => {
   console.log(req.body);
-  res.send('Ok');
+  let longURL = req.body.longURL;
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = longURL;
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
 });
 
-app.get('/urls:id', (req, res) => {
-  let templateVars = { shortURL: req.params.id };
+app.get('/urls/:id', (req, res) => {
+  console.log('/urls/id here');
+  let templateVars = {
+    shortURL: req.params.id,
+    longURL: urlDatabase[req.params.id]
+  };
   res.render('urls_show', templateVars);
 });
 
