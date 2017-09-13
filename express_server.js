@@ -115,6 +115,10 @@ app.post('/login', (req, res) => {
 //POST register
 
 //POST logout
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
 
 //
 //--------------------------- other?
