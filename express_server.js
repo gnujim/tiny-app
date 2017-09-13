@@ -4,6 +4,22 @@ const cookieParser = require('cookie-parser');
 const PORT = process.env.PORT || 8080;
 const app = express();
 
+//generates 6 random alphanumeric characters 'unique shortURL'
+//for now, global scope
+function generateRandomString() {
+  var charNum = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  charNum += charNum.toLowerCase() + '0123456789';
+  var shortURL = '';
+  for (var i = 0; i < 6; i++) {
+    var randomIndex = Math.floor(Math.random() * charNum.length);
+    shortURL += charNum.charAt(randomIndex);
+  }
+  // = Math.random()
+  //   .toString(36)
+  //   .substr(2, 6);
+  return shortURL;
+}
+
 //middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -22,22 +38,6 @@ app.set('view engine', 'ejs');
 const urlDatabase = {
   b2xVn2: 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com'
-};
-
-//generates 6 random alphanumeric characters 'unique shortURL'
-//for now, global scope
-const generateRandomString = () => {
-  var charNum = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  charNum += charNum.toLowerCase() + '0123456789';
-  var shortURL = '';
-  for (var i = 0; i < 6; i++) {
-    var randomIndex = Math.floor(Math.random() * charNum.length);
-    shortURL += charNum.charAt(randomIndex);
-  }
-  // = Math.random()
-  //   .toString(36)
-  //   .substr(2, 6);
-  return shortURL;
 };
 
 // ** ROUTES **
@@ -103,7 +103,10 @@ app.post('/urls/:id/delete', (req, res) => {
 
 //GET login
 
-//GET register
+//GET register returns a page that includes a form w email and password
+app.get('/register', (req, res) => {
+  res.render('register');
+});
 
 //login route
 app.post('/login', (req, res) => {
@@ -113,6 +116,11 @@ app.post('/login', (req, res) => {
 });
 
 //POST register
+app.post('/register', (req, res) => {
+  let email = req.body.email;
+  let password = req.body.password;
+  console.log(`${email} : ${password}`);
+});
 
 //POST logout
 app.post('/logout', (req, res) => {
