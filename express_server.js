@@ -10,9 +10,16 @@ const urlDatabase = {
 //generates 6 random alphanumeric characters 'unique shortURL'
 //for now, global scope
 const generateRandomString = () => {
-  var shortURL = Math.random()
-    .toString(36)
-    .substr(2, 6);
+  var charNum = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  charNum += charNum.toLowerCase() + '0123456789';
+  var shortURL = '';
+  for (var i = 0; i < 6; i++) {
+    var randomIndex = Math.floor(Math.random() * charNum.length);
+    shortURL += charNum.charAt(randomIndex);
+  }
+  // = Math.random()
+  //   .toString(36)
+  //   .substr(2, 6);
   return shortURL;
 };
 
@@ -26,7 +33,7 @@ app.get('/', (req, res) => {
 
 //redirect short urls
 app.get('/u/:shortURL', (req, res) => {
-  //let longURL =
+  let longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
 
@@ -49,12 +56,23 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get('/urls/:id', (req, res) => {
-  console.log('/urls/id here');
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
   res.render('urls_show', templateVars);
+});
+
+//updates a URL resource and redirects to urls_index
+app.post('/urls/:id', (req, res) => {
+  //modifies long url w corresponding short url
+
+  res.redirect('/urls');
+});
+
+app.post('/urls/:id/delete', (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect('/urls');
 });
 
 app.get('/urls.json', (req, res) => {
