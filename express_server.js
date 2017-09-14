@@ -45,6 +45,10 @@ var urlDatabase = {
   '9sm5xK': {
     userID: 'user2RandomID',
     longURL: 'http://www.google.com'
+  },
+  '8sme4k': {
+    userID: 'user2RandomID',
+    longURL: 'http://www.facebook.com'
   }
 };
 
@@ -71,9 +75,11 @@ app.get('/', (req, res) => {
 
 //when /urls request, render views/urls_index.ejs and pass in templateVars
 app.get('/urls', (req, res) => {
+  let userUrls = urlsForUser(req.cookies['user_id']);
+  console.log('User Urls ', userUrls);
   let templateVars = {
     user: users[req.cookies['user_id']],
-    urls: urlDatabase
+    urls: userUrls
   };
   res.render('urls_index', templateVars);
 });
@@ -98,11 +104,10 @@ app.get('/urls/:id', (req, res) => {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
+  console.log(urlDatabase[req.params.id]);
   if (req.cookies['user_id'] === urlDatabase[req.params.id].userID) {
-    console.log('its a match');
     res.render('urls_show', templateVars);
   }
-  //else message??
 });
 
 //redirect short urls
@@ -220,3 +225,14 @@ app.use((req, res, next) => {
 //res.locals.user
 
 //sessions on the REQuest
+
+//function that returns array of urls that belong to user
+function urlsForUser(id) {
+  let urls = [];
+  for (key in urlDatabase) {
+    if (id === urlDatabase[key].userID) {
+      urls.push(key);
+    }
+  }
+  return urls;
+}

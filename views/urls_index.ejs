@@ -12,18 +12,17 @@
   </header>
 
   <ul>
-    <% for (var key in urls) { %>
+    <% urls.forEach(function (url) { %>
       <li>
-        <%= key %>
-          <%= urls[key].longURL %>
-            <a href='http://localhost:8080/urls/<%= key %>'>Edit</a>
-            <form action="/urls/<%= key %>/delete" method="POST">
+        <%= url %>
+            <a href='http://localhost:8080/urls/<%= url %>'>Edit</a>
+            <form action="/urls/<%= url %>/delete" method="POST">
               <div class="button">
                 <button type="submit">Delete</button>
               </div>
             </form>
       </li>
-      <% } %>
+      <% }); %>
   </ul>
 </body>
 
