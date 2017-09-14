@@ -40,6 +40,20 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com'
 };
 
+//global user object
+var users = {
+  userRandomID: {
+    id: 'userRandomID',
+    email: 'user@example.com',
+    password: 'purple-monkey-dinosaur'
+  },
+  user2RandomID: {
+    id: 'user2RandomID',
+    email: 'user2@example.com',
+    password: 'dishwasher-funk'
+  }
+};
+
 // ** ROUTES **
 
 //root
@@ -115,11 +129,27 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
-//POST register
+//register handler
 app.post('/register', (req, res) => {
-  let email = req.body.email;
-  let password = req.body.password;
-  console.log(`${email} : ${password}`);
+  let userEmail = req.body.email;
+  let userPassword = req.body.password;
+  let userId = generateRandomString();
+  for (key in users) {
+    if (userEmail === users[key].email) {
+      res.status(400).send('Bad Request. Email already exists.');
+    }
+  }
+  if (!userEmail || !userPassword) {
+    res.status(400).send('Bad Request');
+  }
+  users[userId] = {
+    id: userId,
+    email: userEmail,
+    password: userPassword
+  };
+  console.log(users[userId]);
+  res.cookie('user_id', userId);
+  res.redirect('/urls');
 });
 
 //POST logout
