@@ -23,9 +23,7 @@ function generateRandomString() {
 //middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// app.use((req, res, next) => {
-//   res.locals.user = req.user;
-// });
+//app.locals
 
 //
 app.use(cookieParser());
@@ -40,8 +38,14 @@ app.set('view engine', 'ejs');
 
 //(not good practice to have in global scope)
 const urlDatabase = {
-  b2xVn2: 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  b2xVn2: {
+    userID: 'userRandomID',
+    longURL: 'http://www.lighthouselabs.ca'
+  },
+  '9sm5xK': {
+    userID: 'user2RandomID',
+    longURL: 'http://www.google.com'
+  }
 };
 
 //global users object
@@ -77,7 +81,14 @@ app.get('/urls', (req, res) => {
 //render urls_new page
 app.get('/urls/new', (req, res) => {
   let templateVars = { user: users[req.cookies['user_id']] };
-  res.render('urls_new', templateVars);
+  //if logged in
+  for (id in users) {
+    if (req.cookies['user_id']) {
+      res.render('urls_new', templateVars);
+    } else {
+      res.render('login', templateVars);
+    }
+  }
 });
 
 //once redirected, render urls_show page
@@ -99,13 +110,17 @@ app.get('/u/:shortURL', (req, res) => {
 //obtain longURL from user, create shortURL, add to database
 app.post('/urls', (req, res) => {
   console.log(req.body);
-  let longURL = req.body.longURL;
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);
+  let long = req.body.longURL;
+  let short = generateRandomString();
+  let id = req.cookies['user_id'];
+  let newData = {};
+  urlDatabase[short] = {
+    userID: id,
+    longURL: long
+  };
+  res.redirect(`/urls/${short}`);
 });
 
-//??? why is adding in get and not post?
 //updates a URL resource and redirects to urls_index
 app.post('/urls/:id', (req, res) => {
   //modifies long url w corresponding short url
@@ -192,3 +207,13 @@ app.get('/urls.json', (req, res) => {
 app.get('/hello', (req, res) => {
   res.end('<html><body>Hello <b>World</b></body></html>\n');
 });
+
+//create own middleware
+app.use((req, res, next) => {
+  req.user = users.find(user => user.id === req.cookies.userId);
+  next();
+});
+
+//res.locals.user
+
+//sessions on the REQuest
