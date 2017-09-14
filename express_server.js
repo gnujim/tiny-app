@@ -143,10 +143,10 @@ app.post('/login', (req, res) => {
     if (password === user.password) {
       res.cookie('user_id', userId);
     } else {
-      res.status(403).send('U SUCK - GET PSSWRD RT');
+      res.status(403).send('Forbidden. Invalid password.');
     }
   } else {
-    res.status(403).send('U SUKC - USER NO EXIST');
+    res.status(403).send('Forbidden. User does not exist.');
   }
   res.redirect('/');
 });
