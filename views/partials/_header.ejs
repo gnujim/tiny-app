@@ -2,19 +2,23 @@
 
 <h1>TINYAPP</h1>
 
-<% if (username) { %>
+<% if (user) { %>
   <form method="POST" action="/logout">
-    <!-- label for logout?? username displayed seperate? -->
-    <label for="username"><%= username %>  </label>
+    <label for="user_id"><%= user.email %>  </label>
     <div class="button">
       <button type="submit">Logout</button>
     </div>
   </form>
   <% } else { %>
-    <form method="POST" action="/login">
-      <label for="username">Sign in: </label>
-      <input id="username" type="text" name="username" placeholder="username" style="width: 200px">
-      <input type="submit" value="Submit">
+    <form method="GET" action="/register">
+      <div class="button">
+        <button type="submit">Register</button>
+      </div>
+    </form>
+    <form method="GET" action="/login">
+    <div class="button">
+      <button type="submit">Login</button>
+    </div>
     </form>
     <% } %>
 

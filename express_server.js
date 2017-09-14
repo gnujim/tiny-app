@@ -120,17 +120,35 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 
 //GET login
+app.get('/login', (req, res) => {
+  res.render('login');
+});
 
 //GET register returns a page that includes a form w email and password
 app.get('/register', (req, res) => {
   res.render('register');
 });
 
-//login route
+//login handler
 app.post('/login', (req, res) => {
-  let username = req.body.username;
-  res.cookie('username', username);
-  res.redirect('/urls');
+  let email = req.body.email;
+  let password = req.body.password;
+  let user;
+  for (userId in users) {
+    if (email === users[userId].email) {
+      user = users[userId];
+    }
+  }
+  if (user) {
+    if (password === user.password) {
+      res.cookie('user_id', userId);
+    } else {
+      res.status(403).send('U SUCK - GET PSSWRD RT');
+    }
+  } else {
+    res.status(403).send('U SUKC - USER NO EXIST');
+  }
+  res.redirect('/');
 });
 
 //register handler
@@ -158,7 +176,7 @@ app.post('/register', (req, res) => {
 
 //POST logout
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
