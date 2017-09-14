@@ -23,6 +23,10 @@ function generateRandomString() {
 //middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// app.use((req, res, next) => {
+//   res.locals.user = req.user;
+// });
+
 //
 app.use(cookieParser());
 
@@ -40,7 +44,7 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com'
 };
 
-//global user object
+//global users object
 var users = {
   userRandomID: {
     id: 'userRandomID',
@@ -64,7 +68,7 @@ app.get('/', (req, res) => {
 //when /urls request, render views/urls_index.ejs and pass in templateVars
 app.get('/urls', (req, res) => {
   let templateVars = {
-    username: req.cookies['username'],
+    user: users[req.cookies['user_id']],
     urls: urlDatabase
   };
   res.render('urls_index', templateVars);
@@ -72,14 +76,14 @@ app.get('/urls', (req, res) => {
 
 //render urls_new page
 app.get('/urls/new', (req, res) => {
-  let templateVars = { username: req.cookies['username'] };
+  let templateVars = { user: users[req.cookies['user_id']] };
   res.render('urls_new', templateVars);
 });
 
 //once redirected, render urls_show page
 app.get('/urls/:id', (req, res) => {
   let templateVars = {
-    username: req.cookies['username'],
+    user: users[req.cookies['user_id']],
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
