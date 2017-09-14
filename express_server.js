@@ -37,7 +37,7 @@ app.listen(PORT, () => {
 app.set('view engine', 'ejs');
 
 //(not good practice to have in global scope)
-const urlDatabase = {
+var urlDatabase = {
   b2xVn2: {
     userID: 'userRandomID',
     longURL: 'http://www.lighthouselabs.ca'
@@ -98,7 +98,11 @@ app.get('/urls/:id', (req, res) => {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
-  res.render('urls_show', templateVars);
+  if (req.cookies['user_id'] === urlDatabase[req.params.id].userID) {
+    console.log('its a match');
+    res.render('urls_show', templateVars);
+  }
+  //else message??
 });
 
 //redirect short urls
@@ -124,7 +128,6 @@ app.post('/urls', (req, res) => {
 //updates a URL resource and redirects to urls_index
 app.post('/urls/:id', (req, res) => {
   //modifies long url w corresponding short url
-
   res.redirect('/urls');
 });
 
