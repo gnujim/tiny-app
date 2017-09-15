@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
+const bcrypt = require('bcrypt');
 const PORT = process.env.PORT || 8080;
 const app = express();
 
@@ -23,15 +24,17 @@ function generateRandomString() {
 //middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//app.locals
+//res.locals
+// app.use((req, res, next) => {
 
-//
-app.use(cookieParser());
+// });
 
-//
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
+app.use(
+  cookieSession({
+    name: 'session',
+    keys: ['secret']
+  })
+);
 
 //use EJS for template
 app.set('view engine', 'ejs');
@@ -57,12 +60,14 @@ var users = {
   userRandomID: {
     id: 'userRandomID',
     email: 'user@example.com',
-    password: 'purple-monkey-dinosaur'
+    password: '$2a$10$ecEcOT15ekLpW5iMg8dALu7HRzJL5Cr6qx1FZUmFPOk5oKHLmxb9S'
+    //'purple-monkey-dinosaur'
   },
   user2RandomID: {
     id: 'user2RandomID',
     email: 'user2@example.com',
-    password: 'dishwasher-funk'
+    password: '$2a$10$hQOInZ/Kl.FyH13eU343UezvdzGWd9zU3ryDw3d9trgOCvUMhmmyi'
+    //'dishwasher-funk'
   }
 };
 
@@ -75,10 +80,11 @@ app.get('/', (req, res) => {
 
 //when /urls request, render views/urls_index.ejs and pass in templateVars
 app.get('/urls', (req, res) => {
-  let userUrls = urlsForUser(req.cookies['user_id']);
+  let userUrls = urlsForUser(req.session.user_id);
   console.log(userUrls);
+  console.log(req.session.user_id);
   let templateVars = {
-    user: users[req.cookies['user_id']],
+    user: users[req.session.user_id],
     urls: userUrls
   };
   res.render('urls_index', templateVars);
@@ -86,10 +92,10 @@ app.get('/urls', (req, res) => {
 
 //render urls_new page ***
 app.get('/urls/new', (req, res) => {
-  let templateVars = { user: users[req.cookies['user_id']] };
+  let templateVars = { user: users[req.session.user_id] };
   //if logged in
   for (id in users) {
-    if (req.cookies['user_id']) {
+    if (req.session.user_id) {
       res.render('urls_new', templateVars);
     } else {
       res.render('login', templateVars);
@@ -100,12 +106,12 @@ app.get('/urls/new', (req, res) => {
 //once redirected, render urls_show page
 app.get('/urls/:id', (req, res) => {
   let templateVars = {
-    user: users[req.cookies['user_id']],
+    user: users[req.session.user_id],
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
-  console.log(req.cookies['user_id']);
-  if (req.cookies['user_id'] === urlDatabase[req.params.id].userID) {
+  console.log(req.session.user_id);
+  if (req.session.user_id === urlDatabase[req.params.id].userID) {
     res.render('urls_show', templateVars);
   } else {
     //display message or prompt
@@ -124,7 +130,7 @@ app.post('/urls', (req, res) => {
   console.log(req.body);
   let long = req.body.longURL;
   let short = generateRandomString();
-  let id = req.cookies['user_id'];
+  let id = req.session.user_id;
   let newData = {};
   urlDatabase[short] = {
     userID: id,
@@ -166,11 +172,9 @@ app.post('/login', (req, res) => {
       user = key;
     }
   }
-  console.log(password);
-  console.log(user.password);
   if (user) {
-    if (password === users[user].password) {
-      res.cookie('user_id', user);
+    if (bcrypt.compareSync(password, users[user].password)) {
+      req.session.user_id = 'user_id';
     } else {
       res.status(403).send('Forbidden. Invalid password.');
     }
@@ -183,28 +187,30 @@ app.post('/login', (req, res) => {
 //register handler
 app.post('/register', (req, res) => {
   let userEmail = req.body.email;
-  let userPassword = req.body.password;
+  //let userPassword = req.body.password;
+  let hashedPassword = bcrypt.hashSync(req.body.password, 10);
   let userId = generateRandomString();
   for (key in users) {
     if (userEmail === users[key].email) {
       res.status(400).send('Bad Request. Email already exists.');
     }
   }
-  if (!userEmail || !userPassword) {
+  if (!userEmail || !hashedPassword) {
     res.status(400).send('Bad Request');
   }
   users[userId] = {
     id: userId,
     email: userEmail,
-    password: userPassword
+    password: hashedPassword
   };
-  console.log(users[userId]);
-  res.cookie('user_id', userId);
+  console.log(users[userId] + users[userId]);
+  req.session.user_id = 'user_id';
   res.redirect('/urls');
 });
 
 //POST logout
 app.post('/logout', (req, res) => {
+  //req.session = null;
   res.clearCookie('user_id');
   res.redirect('/urls');
 });
@@ -222,6 +228,7 @@ app.get('/hello', (req, res) => {
   res.end('<html><body>Hello <b>World</b></body></html>\n');
 });
 
+//?????? from lecture
 //create own middleware
 app.use((req, res, next) => {
   req.user = users.find(user => user.id === req.cookies.userId);
@@ -242,3 +249,8 @@ function urlsForUser(id) {
   }
   return urls;
 }
+
+//
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
