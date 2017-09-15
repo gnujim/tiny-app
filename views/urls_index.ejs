@@ -12,11 +12,11 @@
   </header>
 
   <ul>
-    <% urls.forEach((url) => { %>
+    <% urls.forEach((obj) => { %>
       <li>
-        <%= url %>
-            <a href='http://localhost:8080/urls/<%= url %>'>Edit</a>
-            <form action="/urls/<%= url %>/delete" method="POST">
+        <p><b><%= obj.shortUrl %></b>: <%= obj.longUrl %></p>
+            <a href='http://localhost:8080/urls/<%= obj.shortUrl %>'>Edit</a>
+            <form action="/urls/<%= obj.shortUrl %>/delete" method="POST">
               <div class="button">
                 <button type="submit">Delete</button>
               </div>

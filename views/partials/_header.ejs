@@ -1,10 +1,17 @@
 <!-- views/partials/_header.ejs -->
+<!-- SITE HEADER -->
+<!-- if user is logged in, header shows 
+       - the user's email 
+       - logout button which POSTs to /logout -->
+<!-- if not logged in, header shows 
+      - link to /register 
+      - link to /login -->
 
 <h1>TINYAPP</h1>
 
 <% if (user) { %>
   <form method="POST" action="/logout">
-    <label for="user_id"><%= user.email %>  </label>
+    <div><%= user.email %>  </div>
     <div class="button">
       <button type="submit">Logout</button>
     </div>
@@ -22,6 +29,3 @@
     </form>
     <% } %>
 
-
-      <!-- if (username), display username and a seperate logout form
-  which will post to /logout. Otherwise, show login form. -->
