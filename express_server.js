@@ -105,7 +105,7 @@ app.get('/', (req, res) => {
   }
 });
 
-// when /urls request, render views/urls_index.ejs and pass in templateVars
+//
 app.get('/urls', (req, res) => {
   let userUrls = urlsForUser(req.session.user_id);
   let templateVars = {
@@ -114,7 +114,7 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-// render urls_new page ***
+// render urls_new page **must stay under urls
 app.get('/urls/new', (req, res) => {
   if (req.session.user_id) {
     res.render('urls_new');
@@ -123,10 +123,14 @@ app.get('/urls/new', (req, res) => {
   }
 });
 
-// once redirected, render urls_show page
+// edit page
 app.get('/urls/:id', (req, res) => {
-  if (req.session.user_id === urlDatabase[req.params.id].userID) {
-    res.render('urls_show');
+  if (req.session.user_id) {
+    const templateVars = {
+      shortURL: req.params.id,
+      longURL: urlDatabase[req.params.id].longURL
+    };
+    res.render('urls_show', templateVars);
   } else {
     // display message or prompt
     res.status(403).send('NOOOO');
@@ -135,7 +139,9 @@ app.get('/urls/:id', (req, res) => {
 
 // redirect short urls
 app.get('/u/:shortURL', (req, res) => {
+  console.log(req.params.shortURL); //working
   let longURL = urlDatabase[req.params.shortURL].longURL;
+  console.log(longURL);
   res.redirect(longURL);
 });
 
@@ -149,12 +155,21 @@ app.post('/urls', (req, res) => {
     userID: id,
     longURL: long
   };
-  res.redirect(`/urls/${short}`);
+  //res.redirect(`/urls/${short}`);
+  res.redirect('/urls');
 });
 
-// updates a URL resource and redirects to urls_index
+// updates a URL resource and redirects to urls_index ***
 app.post('/urls/:id', (req, res) => {
   // modifies long url w corresponding short url
+  console.log(req.params.shortURL);
+  let long = req.body.longURL;
+  let short = req.params.id;
+  if (req.session.user_id) {
+    urlDatabase[short].longURL = long;
+  } else {
+    res.end('HTML error msg here');
+  }
   res.redirect('/urls');
 });
 
@@ -242,7 +257,7 @@ app.get('/hello', (req, res) => {
   res.end('<html><body>Hello <b>World</b></body></html>\n');
 });
 
-app.use((req, res, next) => {
-  req.user = users.find(user => user.id === req.cookies.userId);
-  next();
-});
+// app.use((req, res, next) => {
+//   req.user = users.find(user => user.id === req.cookies.userId);
+//   next();
+// });
