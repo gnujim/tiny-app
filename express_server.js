@@ -76,7 +76,7 @@ app.get('/', (req, res) => {
 //when /urls request, render views/urls_index.ejs and pass in templateVars
 app.get('/urls', (req, res) => {
   let userUrls = urlsForUser(req.cookies['user_id']);
-  console.log('User Urls ', userUrls);
+  console.log(userUrls);
   let templateVars = {
     user: users[req.cookies['user_id']],
     urls: userUrls
@@ -84,7 +84,7 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-//render urls_new page
+//render urls_new page ***
 app.get('/urls/new', (req, res) => {
   let templateVars = { user: users[req.cookies['user_id']] };
   //if logged in
@@ -104,15 +104,18 @@ app.get('/urls/:id', (req, res) => {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
-  console.log(urlDatabase[req.params.id]);
+  console.log(req.cookies['user_id']);
   if (req.cookies['user_id'] === urlDatabase[req.params.id].userID) {
     res.render('urls_show', templateVars);
-  }
+  } else {
+    //display message or prompt
+    res.status(403).send('NOOOO');
+  } //else if?? url with matching id does not belong to them (if logged in)
 });
 
 //redirect short urls
 app.get('/u/:shortURL', (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -157,14 +160,17 @@ app.post('/login', (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   let user;
-  for (userId in users) {
-    if (email === users[userId].email) {
-      user = users[userId];
+  for (key in users) {
+    console.log(key);
+    if (email === users[key].email) {
+      user = key;
     }
   }
+  console.log(password);
+  console.log(user.password);
   if (user) {
-    if (password === user.password) {
-      res.cookie('user_id', userId);
+    if (password === users[user].password) {
+      res.cookie('user_id', user);
     } else {
       res.status(403).send('Forbidden. Invalid password.');
     }
