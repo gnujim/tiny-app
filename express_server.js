@@ -7,7 +7,7 @@ const app = express();
 
 // ** FUNCTIONS **
 
-// generates 6 random alphanumeric characters 'unique shortURL'
+// function that generates 6 random alphanumeric characters
 function generateRandomString() {
   var charNum = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   charNum += charNum.toLowerCase() + '0123456789';
@@ -16,9 +16,6 @@ function generateRandomString() {
     var randomIndex = Math.floor(Math.random() * charNum.length);
     shortURL += charNum.charAt(randomIndex);
   }
-  // = Math.random()
-  //   .toString(36)
-  //   .substr(2, 6);
   return shortURL;
 }
 
@@ -38,9 +35,9 @@ function urlsForUser(id) {
 }
 
 // ** MIDDLEWARE **
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// cookie-session middleware
 app.use(
   cookieSession({
     name: 'session',
@@ -56,12 +53,11 @@ app.use(function locals(req, res, next) {
   next();
 });
 
-// use EJS for template
 app.set('view engine', 'ejs');
 
 // ** HARDCODED DATABASE OBJECTS **
 
-// (not good practice to have in global scope)
+// hardcoded urlDatabase object
 var urlDatabase = {
   b2xVn2: {
     userID: 'userRandomID',
@@ -77,7 +73,7 @@ var urlDatabase = {
   }
 };
 
-// global users object
+// hardcoded users object (user database)
 var users = {
   userRandomID: {
     id: 'userRandomID',
@@ -105,7 +101,8 @@ app.get('/', (req, res) => {
   }
 });
 
-//
+// urls index page
+// shows list of URLs user has created
 app.get('/urls', (req, res) => {
   let userUrls = urlsForUser(req.session.user_id);
   let templateVars = {
@@ -114,7 +111,8 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-// render urls_new page **must stay under urls
+// renders page that allows logged in user to add new urls
+// if not logged in, redirects to login
 app.get('/urls/new', (req, res) => {
   if (req.session.user_id) {
     res.render('urls_new');
@@ -123,7 +121,8 @@ app.get('/urls/new', (req, res) => {
   }
 });
 
-// edit page
+// renders page that allows user to edit their existing short url
+//
 app.get('/urls/:id', (req, res) => {
   if (req.session.user_id === urlDatabase[req.params.id].userID) {
     const templateVars = {
@@ -132,18 +131,17 @@ app.get('/urls/:id', (req, res) => {
     };
     res.render('urls_show', templateVars);
   } else {
-    // display message or prompt
-    res.status(403).send('NOOOO');
-  } // else if?? url with matching id does not belong to them (if logged in)
+    res.status(403).send('Forbidden.');
+  }
 });
 
-// redirect short urls
+// redirects shortURL to longURL site
 app.get('/u/:shortURL', (req, res) => {
   let longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
-// obtain longURL from user, create shortURL, add to database
+// generates a short URL, saves it, associates it with user in database
 app.post('/urls', (req, res) => {
   let long = req.body.longURL;
   let short = generateRandomString();
@@ -156,28 +154,23 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${short}`);
 });
 
-// updates a URL resource and redirects to urls_index ***
+// updates a url if user is logged in
 app.post('/urls/:id', (req, res) => {
-  // modifies long url w corresponding short url
   let long = req.body.longURL;
   let short = req.params.id;
   if (req.session.user_id === urlDatabase[req.params.id].userID) {
-    //unnecessary because GET?
     urlDatabase[short].longURL = long;
-  } else {
-    //unnecessary because GET?
-    res.status(401).send('no. put error msg hereee');
   }
   res.redirect('/urls');
 });
 
-// deletes id and value from urlDatabase
+// deletes urls from urlDatabase
 app.post('/urls/:id/delete', (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect('/urls');
 });
 
-// GET login
+// login page, redirects to index if user already logged in
 app.get('/login', (req, res) => {
   if (req.session.user_id) {
     res.redirect('/urls');
@@ -186,7 +179,7 @@ app.get('/login', (req, res) => {
   }
 });
 
-// GET register returns a page that includes a form w email and password
+// register page, redirects to index if user already logged in
 app.get('/register', (req, res) => {
   if (req.session.user_id) {
     res.redirect('/urls');
@@ -240,7 +233,7 @@ app.post('/register', (req, res) => {
   res.redirect('/urls');
 });
 
-// POST logout
+// logout deletes cookie, redirects to index
 app.post('/logout', (req, res) => {
   req.session = null;
   res.redirect('/urls');
@@ -251,9 +244,8 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-//--------------------------- other?
+// ** EARLIER STEPS IN PROJECT **
 
-//
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });

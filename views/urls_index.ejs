@@ -27,6 +27,10 @@
       <a href='http://localhost:8080/urls/new'>Create a New Short Link</a>
     <% } %>
   </ul>
+  
+  <% if (!user) { %>
+    <p>Please Register or Login</p>
+  <% } %>
 </body>
 
 </html>
